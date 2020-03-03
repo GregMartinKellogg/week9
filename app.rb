@@ -19,6 +19,10 @@ events_table = DB.from(:events)
 rsvps_table = DB.from(:rsvps)
 users_table = DB.from(:users)
 
+before do
+    @current_user = users_table.where(id: session["user_id"]).to_a[0] #assigns who's logged in
+end
+
 get "/" do
     puts events_table.all
     @events = events_table.all.to_a
@@ -85,5 +89,6 @@ post "/logins/create" do
 end
 
 get "/logout" do
+    session["user_id"]=nil
     view "logout"
 end
