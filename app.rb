@@ -29,6 +29,7 @@ get "/events/:id" do
     @event = events_table.where(id: params[:id]).to_a[0]
     @rsvps = rsvps_table.where(event_id: @event[:id])
     @going_count = rsvps_table.where(event_id: @event[:id]).sum(:going)
+    @users_table = users_table
     view "event"
 end
 
@@ -55,7 +56,7 @@ get "/users/create" do
     puts params
     users_table.insert(name: params["name"], 
                        email: params["email"], 
-                       password: params["password"])
+                       password: BCrypt::Password.create(params["password"]))
     view "create_user"
 end
 
@@ -63,7 +64,7 @@ get "/logins/new" do
     view "new_login"
 end
 
-get "/logins/create" do
+post "/logins/create" do
     puts params
     email_address = params["email"]
     password = params["password"]
@@ -71,7 +72,7 @@ get "/logins/create" do
     @user = users_table.where(email: email_address).to_a[0]
 
     if @user
-        if @user[:password] == password
+        if BCrypt::Password.new(@user[:password]) == password
             session["user_id"] = @user[:id]
             view "create_login"
         else
